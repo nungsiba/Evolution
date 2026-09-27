@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Kangleipung Evolution — Version 1</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<div id="scanlines"></div>
+<div id="game-container"></div>
+
+<!-- HUD -->
+<div id="hud">
+  <span id="level-label">LVL 1</span>
+  <div id="xp-bar-wrap"><div id="xp-bar"></div></div>
+  <span id="soul-shards-display">⬡ 0</span>
+  <span id="kill-counter">☠ 0</span>
+  <div id="hp-wrap">
+    <span id="hp-label">♥ 5/5</span>
+    <div id="hp-bar-track"><div id="hp-bar-fill"></div></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     AUTH OVERLAY — Login / Signup (Phone + Username + Password)
+══════════════════════════════════════════════════════ -->
+<div id="auth-overlay" class="hidden">
+  <div id="auth-box">
+    <button id="auth-close-btn">✕</button>
+    <div id="auth-title">KANGLEIPUNG EVOLUTION</div>
+    <div id="auth-subtitle">SIGN IN TO SYNC + PLAY CO-OP</div>
+
+    <div id="auth-signup-panel">
+      <input class="auth-field" id="auth-signup-phone" type="tel" placeholder="Phone Number" autocomplete="tel">
+      <input class="auth-field" id="auth-signup-username" type="text" placeholder="Username" autocomplete="username">
+      <input class="auth-field" id="auth-signup-password" type="password" placeholder="Password (min 6 chars)" autocomplete="new-password">
+      <button class="auth-submit-btn" id="auth-signup-btn">Create Account</button>
+      <div class="auth-switch">Already a Reaper? <span id="auth-show-login">Log in</span></div>
+    </div>
+
+    <div id="auth-login-panel" class="hidden">
+      <input class="auth-field" id="auth-login-identifier" type="text" placeholder="Phone or Username" autocomplete="username">
+      <input class="auth-field" id="auth-login-password" type="password" placeholder="Password" autocomplete="current-password">
+      <button class="auth-submit-btn" id="auth-login-btn">Log In</button>
+      <div class="auth-switch">New here? <span id="auth-show-signup">Create an account</span></div>
+    </div>
+
+    <div id="auth-error"></div>
+  </div>
+</div>
+
+<!-- MAIN MENU -->
+<div id="menu-overlay" class="overlay hidden">
+  <div class="overlay-title">Soul Reaper <span style="font-size:0.55em;letter-spacing:4px;color:var(--neon-violet);">2</span></div>
+  <div class="overlay-sub">KANGLEIPUNG EVOLUTION · DARK HARVEST</div>
+  <div id="version-tag">VERSION 1</div>
+  <div id="menu-account-line">
+    <span id="menu-account-status">Playing as Guest (offline)</span>
+    <button id="menu-login-btn">Log In / Sync</button>
+    <button id="auth-logout-btn" class="hidden">Log Out</button>
+  </div>
+  <div id="shard-total-menu">⬡ <span id="menu-shard-val">0</span> Soul Shards</div>
+
+  <button class="menu-btn season-btn" id="btn-open-season">🌑 Season Events</button>
+  <button class="menu-btn" id="btn-start">Begin the Harvest</button>
+  <button class="menu-btn violet" id="btn-open-coop">🤝 Co-op Multiplayer</button>
+  <button class="menu-btn violet" id="btn-open-shop">☽ Skin Shop</button>
+  <button class="menu-btn gold"   id="btn-open-tasks">📋 Soul Contracts</button>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     CO-OP LOBBY OVERLAY
+══════════════════════════════════════════════════════ -->
+<div id="coop-overlay" class="hidden">
+  <div id="coop-box">
+    <button id="coop-close-btn">✕</button>
+    <div id="coop-title">Co-op Multiplayer</div>
+    <div id="coop-subtitle">FIGHT THE HARVEST TOGETHER · REAL-TIME</div>
+
+    <div id="coop-lobby-panel">
+      <button class="coop-action-btn" id="btn-coop-create">Create Room</button>
+      <input id="coop-join-code" placeholder="ROOM CODE" maxlength="5">
+      <button class="coop-action-btn" id="btn-coop-join">Join Room</button>
+    </div>
+
+    <div id="coop-room-panel" class="hidden">
+      <div id="coop-room-code">—</div>
+      <div id="coop-player-list"></div>
+      <button class="coop-action-btn hidden" id="btn-coop-start">Start Together →</button>
+      <button class="coop-action-btn" id="btn-coop-leave" style="border-color:var(--neon-red);color:var(--neon-red)">Leave Room</button>
+    </div>
+
+    <div id="coop-error"></div>
+  </div>
+</div>
+
+<!-- LEVEL-UP -->
+<div id="levelup-overlay" class="overlay hidden">
+  <div class="overlay-title">Soul Ascension</div>
+  <div class="overlay-sub">CHOOSE YOUR EVOLUTION</div>
+  <div id="upgrade-cards"></div>
+</div>
+
+<!-- GAME OVER -->
+<div id="gameover-overlay" class="overlay hidden">
+  <div class="overlay-title">Soul Extinguished</div>
+  <div class="overlay-sub">THE DARKNESS CLAIMS YOU</div>
+  <div id="run-stats">
+    <span class="stat-row">Kills</span>        <span class="stat-val" id="go-kills">0</span>
+    <span class="stat-row">Level Reached</span><span class="stat-val" id="go-level">1</span>
+    <span class="stat-row">Shards Earned</span><span class="stat-val" id="go-shards">0</span>
+    <span class="stat-row">Upgrades Taken</span><span class="stat-val" id="go-upgrades">0</span>
+  </div>
+  <button class="menu-btn"        id="btn-restart">Reap Again</button>
+  <button class="menu-btn danger" id="btn-menu">Main Menu</button>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     SKIN SHOP OVERLAY
+══════════════════════════════════════════════════════ -->
+<div id="shop-overlay" class="hidden">
+
+  <!-- Header -->
+  <div id="shop-header">
+    <div id="shop-title-block">
+      <div id="shop-title">Soul Vestiary</div>
+      <div id="shop-subtitle">AURAS · GLOW TAILS · LEGENDARY EFFECTS</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:20px;">
+      <div id="shop-balance">⬡ <span id="shop-shard-val">0</span></div>
+      <button id="shop-close-btn">✕</button>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div id="shop-tabs">
+    <button class="shop-tab active" data-tab="all">All Skins</button>
+    <button class="shop-tab" data-tab="basic">Basic · 220⬡</button>
+    <button class="shop-tab" data-tab="premium">Premium · 450⬡</button>
+    <button class="shop-tab" data-tab="legendary">Legendary · 670⬡</button>
+    <button class="shop-tab shop-tab-elite" data-tab="elite">⚡ Elite · 1300⬡</button>
+    <button class="shop-tab" data-tab="ad">🎬 Ad-Only</button>
+  </div>
+
+  <!-- Body -->
+  <div id="shop-body">
+    <div id="shop-grid-wrap">
+      <div id="shop-grid"></div>
+    </div>
+    <!-- Drag handle -->
+    <div id="preview-resizer" title="Drag to resize preview panel"></div>
+    <!-- Preview panel -->
+    <div id="shop-preview-panel">
+      <div id="preview-title">Preview</div>
+      <div id="preview-canvas-wrap">
+        <canvas id="preview-canvas"></canvas>
+      </div>
+      <div>
+        <div id="preview-skin-name">—</div>
+        <div id="preview-skin-tier" class="tier-basic">SELECT A SKIN</div>
+      </div>
+      <div id="preview-skin-desc">Click any skin to preview it here.</div>
+      <div id="preview-skin-price" style="display:none"></div>
+      <!-- Bonus stats (shown for elite/legendary with bonuses) -->
+      <div id="preview-bonus-stats">
+        <div id="preview-bonus-label">⚡ Active Bonuses</div>
+        <div id="preview-bonus-lines"></div>
+      </div>
+      <button id="preview-action-btn" style="display:none"></button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════
+     TASK & ACHIEVEMENT ENGINE — HTML
+══════════════════════════════════════════════════════ -->
+
+<!-- Notification toast stack -->
+<div id="task-toast-stack"></div>
+
+<!-- Task Board Overlay -->
+<div id="tasks-overlay" class="hidden">
+  <div id="tasks-header">
+    <div id="tasks-title-block">
+      <div id="tasks-title">Soul Contracts</div>
+      <div id="tasks-subtitle">MISSIONS · ACHIEVEMENTS · DAILY BOUNTIES</div>
+    </div>
+    <button id="tasks-close-btn">✕</button>
+  </div>
+
+  <div id="tasks-filter-bar">
+    <button class="tasks-filter-tab active" data-filter="all">All</button>
+    <button class="tasks-filter-tab" data-filter="mission">Missions</button>
+    <button class="tasks-filter-tab" data-filter="achievement">Achievements</button>
+    <button class="tasks-filter-tab" data-filter="daily">Daily</button>
+  </div>
+
+  <div id="tasks-list-wrap">
+    <div id="tasks-list"></div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════
+     SEASON EVENTS OVERLAY — Part 2 Kangleipung Edition
+══════════════════════════════════════════════════════ -->
+<div id="season-overlay" class="hidden">
+
+  <!-- Header -->
+  <div id="season-header">
+    <div id="season-title-block">
+      <div id="season-title">Season 1 · Dark Harvest</div>
+      <div id="season-subtitle">KANGLEIPUNG EVOLUTION · EXCLUSIVE REWARDS</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:16px;">
+      <div id="season-balance-display">⬡ <span id="season-shard-val">0</span></div>
+      <button id="season-close-btn">✕</button>
+    </div>
+  </div>
+
+  <div id="season-content">
+
+    <!-- ─── SECTION 1: SPIN TO WIN ─────────────────────── -->
+    <div id="spin-section">
+      <div class="season-section-label">🎰 Spin to Win · Season Exclusive</div>
+
+      <div id="spin-layout">
+
+        <!-- Wheel -->
+        <div id="spin-wheel-wrap">
+          <div id="spin-pointer"></div>
+          <canvas id="spin-canvas" width="200" height="200"></canvas>
+        </div>
+
+        <!-- Info + controls -->
+        <div id="spin-info">
+          <div id="spin-featured-label">FEATURED REWARD</div>
+
+          <div id="spin-featured-skin">
+            <div id="spin-skin-preview">🌑</div>
+            <div id="spin-skin-details">
+              <div id="spin-skin-name">Solar Eclipse</div>
+              <div id="spin-skin-tier">☀ LEGENDARY · SEASON EXCLUSIVE</div>
+              <div id="spin-skin-bonus">+12% Damage&nbsp;&nbsp;·&nbsp;&nbsp;+15% Soul Shard Gain</div>
+            </div>
+          </div>
+
+          <div id="spin-chance-badge">
+            <span>⚡</span>
+            <span>1.5% chance per spin to unlock instantly</span>
+          </div>
+
+          <div id="spin-result-msg" aria-live="polite"></div>
+          <div id="spin-tally">Spins today: <span id="spin-count-display">0</span></div>
+
+          <div id="spin-buttons">
+            <button class="spin-btn spin-btn-shards" id="btn-spin-shards">
+              ⬡ 500 · Spirit Spin
+            </button>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ─── SECTION 2: SEASON PASS ────────────────────── -->
+    <div id="pass-section">
+      <div class="season-section-label">🏆 Season Pass · Levels 1–20</div>
+
+      <div id="pass-header-row">
+        <div id="pass-info">
+          <div id="pass-title-text">Dark Harvest Pass</div>
+          <div id="pass-level-display">Level <span id="pass-level-num">1</span> / 20</div>
+          <div id="pass-xp-display"><span id="pass-xp-current">0</span> / <span id="pass-xp-needed">1000</span> Season XP</div>
+        </div>
+
+        <div id="pass-elite-reward">
+          <div id="pass-reward-skin-preview">☀</div>
+          <div class="pass-reward-info">
+            <div class="pass-reward-name">Solar Eclipse</div>
+            <div class="pass-reward-level">⚡ ELITE · UNLOCK AT LEVEL 20</div>
+            <div class="pass-reward-bonus">+12% Damage · +8% Speed · +15% Shards</div>
+            <div class="pass-locked-tag" id="pass-reward-status">🔒 LOCKED</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="pass-bar-section">
+        <div id="pass-levels-row"></div>
+        <div id="pass-xp-bar-wrap">
+          <div id="pass-xp-bar-fill" style="width:0%"></div>
+        </div>
+        <div id="pass-xp-label">100 Season XP per 1,000 Souls Absorbed</div>
+      </div>
+    </div>
+
+  </div><!-- /season-content -->
+</div><!-- /season-overlay -->
+
+<div id="shop-toast" class="hidden">Toast</div>
+<!-- Branded Footer -->
+<div id="brand-footer">
+  KANGLEIPUNG EVOLUTION&nbsp;&nbsp;·&nbsp;&nbsp;VERSION 1&nbsp;&nbsp;·&nbsp;&nbsp;BY&nbsp;<span class="brand-name">KANGLEIPUNG INITIATIVE</span>
+</div>
+
+<!-- Mute / Unmute toggle -->
+<button id="mute-btn" title="Toggle Audio">🔊</button>
+
+
+<!-- ══════════════════════════════════════════════════════
+     SCRIPTS
+══════════════════════════════════════════════════════ -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.60.0/phaser.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="js/vendor-shim.js"></script>
+<script src="js/supabase-client.js"></script>
+<script src="js/game-events.js"></script>
+<script src="js/save-system.js"></script>
+<script src="js/season-skins.js"></script>
+<script src="js/kangleipung-save.js"></script>
+<script src="js/season-manager.js"></script>
+<script src="js/sound-manager.js"></script>
+<script src="js/tasks-data.js"></script>
+<script src="js/task-manager.js"></script>
+<script src="js/skin-catalogue.js"></script>
+<script src="js/legendary-trail.js"></script>
+<script src="js/skin-system.js"></script>
+<script src="js/upgrades.js"></script>
+<script src="js/entities.js"></script>
+<script src="js/death-particles.js"></script>
+<script src="js/game-scene.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/multiplayer.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
